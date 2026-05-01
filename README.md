@@ -116,7 +116,7 @@ Aquesta eina prioritza l’estabilitat i compatibilitat. Per això:
 
 ## 🎯 Casos d’ús típics
 
-- Canvi d’ordinador d��un docent.
+- Canvi d’ordinador d'un/a docent.
 - Preparació d’equips per a una aula.
 - Clonació de perfils base.
 - Recuperació ràpida de preferits i historial.
