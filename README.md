@@ -129,7 +129,6 @@ El paquet inclou:
 
 - **`ExportaChrome.ps1`** → Aplicació principal.
 - **`ExportaChrome.bat`** → Llançador automàtic.
-- (Fitxers auxiliars generats en exportacions).
 
 El `.bat` executa PowerShell amb permisos suficients per evitar bloquejos habituals.
 
@@ -138,11 +137,11 @@ El `.bat` executa PowerShell amb permisos suficients per evitar bloquejos habitu
 ## 📌 Resum
 
 ExportaChrome és una eina:
-- Pràctica.
-- Directa.
-- Pensada per funcionar sense complicacions.
+- Pràctica
+- Directa
+- Pensada per funcionar sense complicacions
 
-👉 Si busques traslladar perfils i preferits de Chrome fàcilment, aquesta eina està dissenyada exactament per això.
+👉 Si busques traslladar perfils i preferits de Chrome fàcilment, aquesta eina està dissenyada exactament per a això.
 
 ---
 
