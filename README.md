@@ -135,12 +135,6 @@ El `.bat` executa PowerShell amb permisos suficients per evitar bloquejos habitu
 
 ---
 
-## 🧑‍💻 Desenvolupament
-
-Aquest projecte ha estat ideat i desenvolupat per **ajimen49**.
-
----
-
 ## 📌 Resum
 
 ExportaChrome és una eina:
@@ -149,3 +143,9 @@ ExportaChrome és una eina:
 - Pensada per funcionar sense complicacions.
 
 👉 Si busques traslladar perfils i preferits de Chrome fàcilment, aquesta eina està dissenyada exactament per això.
+
+---
+
+## 🧑‍💻 Desenvolupament
+
+Aquest projecte ha estat ideat i desenvolupat per **ajimen49**.
