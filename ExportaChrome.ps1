@@ -1,5 +1,5 @@
-﻿# ==============================================================================
-# ExportaChrome v5.3
+# ==============================================================================
+# ExportaChrome
 # ------------------------------------------------------------------------------
 # - Local State: merge MÍNIM a la importació (name, user_name, last_used)
 #   perquè Chrome reconegui els perfils al PC de destí. Sense copiar
@@ -13,7 +13,9 @@
 
 Add-Type -AssemblyName System.Windows.Forms
 Add-Type -AssemblyName System.Drawing
-[Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+try {
+    [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+} catch {}
 
 # --- CONFIG ---
 $script:chromePath  = Join-Path $env:LOCALAPPDATA "Google\Chrome\User Data"
@@ -188,6 +190,36 @@ function Test-ZipValid($zipPath, $tempDest) {
     }
 }
 
+# Flag per evitar lògiques d'events durant canvis massius
+$script:isBulkUpdate = $false
+
+function Set-GridAll($grid, [bool]$checked) {
+    $script:isBulkUpdate = $true
+    try {
+        $grid.SuspendLayout()
+        foreach ($row in $grid.Rows) {
+            if ($row.IsNewRow) { continue }
+
+            # Respecta files deshabilitades (PERFIL read-only)
+            if ($row.Cells["PERFIL"].ReadOnly) { continue }
+
+            $row.Cells["PERFIL"].Value = $checked
+
+            if ($checked) {
+                if (-not $row.Cells["PREF"].ReadOnly) { $row.Cells["PREF"].Value = $true }
+                if (-not $row.Cells["HIST"].ReadOnly) { $row.Cells["HIST"].Value = $true }
+            } else {
+                if (-not $row.Cells["PREF"].ReadOnly) { $row.Cells["PREF"].Value = $false }
+                if (-not $row.Cells["HIST"].ReadOnly) { $row.Cells["HIST"].Value = $false }
+            }
+        }
+        $grid.Refresh()
+    } finally {
+        $grid.ResumeLayout()
+        $script:isBulkUpdate = $false
+    }
+}
+
 # Graella compartida Export/Import
 function New-ProfileGrid {
     $g = New-Object Windows.Forms.DataGridView
@@ -229,7 +261,7 @@ function New-ProfileGrid {
     $g.Add_CurrentCellDirtyStateChanged({
         param($sender, $e)
         if ($sender.IsCurrentCellDirty) {
-            $sender.CommitEdit([Windows.Forms.DataGridViewDataErrorContexts]::Commit)
+            $sender.CommitEdit([System.Windows.Forms.DataGridViewDataErrorContexts]::Commit)
         }
     })
 
@@ -238,6 +270,7 @@ function New-ProfileGrid {
     #   PERFIL desmarcat     → PREF i HIST es desmarquen
     $g.Add_CellValueChanged({
         param($sender, $e)
+        if ($script:isBulkUpdate) { return }
         if ($e.RowIndex -lt 0) { return }
         $row = $sender.Rows[$e.RowIndex]
 
@@ -343,6 +376,18 @@ if ($script:mode -eq "export") {
         $email = if ($meta[$id]) { $meta[$id].email } else { "" }
         $grid.Rows.Add($id, $true, $name, $email, $true, $true) | Out-Null
     }
+
+    $btnAll = New-Object System.Windows.Forms.Button
+    $btnAll.Text = "MARCA-HO TOT"
+    $btnAll.Size = New-Object System.Drawing.Size(160,35)
+    $btnAll.Location = New-Object System.Drawing.Point(20,310)
+    $btnAll.Add_Click({ Set-GridAll $grid $true })
+
+    $btnNone = New-Object System.Windows.Forms.Button
+    $btnNone.Text = "DESMARCA-HO TOT"
+    $btnNone.Size = New-Object System.Drawing.Size(160,35)
+    $btnNone.Location = New-Object System.Drawing.Point(190,310)
+    $btnNone.Add_Click({ Set-GridAll $grid $false })
 
     $progress          = New-Object Windows.Forms.ProgressBar
     $progress.Location = New-Object Drawing.Point(20,345)
@@ -454,7 +499,7 @@ if ($script:mode -eq "export") {
         }
     })
 
-    $form.Controls.AddRange(@($grid,$progress,$lbl,$btn))
+    $form.Controls.AddRange(@($grid,$btnAll,$btnNone,$progress,$lbl,$btn))
     $form.ShowDialog() | Out-Null
 }
 
@@ -546,6 +591,18 @@ elseif ($script:mode -eq "import") {
             $grid.Rows[$rowIdx].Cells["PERFIL"].Style.BackColor = [Drawing.Color]::LightGray
         }
     }
+
+    $btnAll = New-Object System.Windows.Forms.Button
+    $btnAll.Text = "MARCA-HO TOT"
+    $btnAll.Size = New-Object System.Drawing.Size(160,35)
+    $btnAll.Location = New-Object System.Drawing.Point(20,310)
+    $btnAll.Add_Click({ Set-GridAll $grid $true })
+
+    $btnNone = New-Object System.Windows.Forms.Button
+    $btnNone.Text = "DESMARCA-HO TOT"
+    $btnNone.Size = New-Object System.Drawing.Size(160,35)
+    $btnNone.Location = New-Object System.Drawing.Point(190,310)
+    $btnNone.Add_Click({ Set-GridAll $grid $false })
 
     $progress          = New-Object Windows.Forms.ProgressBar
     $progress.Location = New-Object Drawing.Point(20,345)
@@ -640,10 +697,10 @@ elseif ($script:mode -eq "import") {
         }
     })
 
-    $form.Add_FormClosed({
+      $form.Add_FormClosed({
         if (Test-Path $script:tempImport) { Remove-Item $script:tempImport -Recurse -Force }
     })
 
-    $form.Controls.AddRange(@($grid,$progress,$lbl,$btn))
+    $form.Controls.AddRange(@($grid,$btnAll,$btnNone,$progress,$lbl,$btn))
     $form.ShowDialog() | Out-Null
 }
